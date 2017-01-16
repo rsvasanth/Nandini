@@ -49,3 +49,7 @@
 .nav-tabs > li > a, .nav-tabs > li > a:hover {
   cursor: pointer;
 }
+.logo{
+  margin-top: 10px;
+  margin-left: 20px;
+}

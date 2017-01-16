@@ -2,7 +2,13 @@
   'use strict';
   angular
     .module('com.module.products')
-    .service('CategoriesService', function (CoreService, Category, gettextCatalog) {
+    .service('CategoriesService', function (CoreService, Category,Membercategory, gettextCatalog) {
+
+      this.getMemberCategories = function () {
+        return Membercategory.findOne({
+
+        }).$promise;
+      };
 
       this.getCategories = function () {
         return Category.find({

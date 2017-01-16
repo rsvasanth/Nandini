@@ -2,7 +2,33 @@
   'use strict';
   angular
     .module('com.module.products')
-    .config(function ($stateProvider) {
+    .provider('modalState', function($stateProvider) {
+    var provider = this;
+    this.$get = function() {
+        return provider;
+    }
+    this.state = function(stateName, options) {
+        var modalInstance;
+        $stateProvider.state(stateName, {
+            url: options.url,
+            onEnter: function($modal, $state) {
+                modalInstance = $modal.open(options);
+                modalInstance.result['finally'](function() {
+                    modalInstance = null;
+                    if ($state.$current.name === stateName) {
+                        $state.go('^.list');
+                    }
+                });
+            },
+            onExit: function() {
+                if (modalInstance) {
+                    modalInstance.close();
+                }
+            }
+        });
+    };
+})
+    .config(function ($stateProvider,modalStateProvider) {
       $stateProvider
         .state('app.products', {
           abstract: true,
@@ -13,14 +39,15 @@
           url: '',
           templateUrl: 'modules/products/views/list.html',
           controllerAs: 'ctrl',
-          controller: function (categories) {
-            this.categories = categories;
+          controller: function (products) {
+            this.products = products;
           },
           resolve: {
-            categories: [
-              'CategoriesService',
-              function (CategoriesService) {
-                return CategoriesService.getCategories();
+
+            products: [
+              'ProductsService',
+              function (ProductsService) {
+                return ProductsService.getProducts();
               }
             ]
           }
@@ -95,20 +122,7 @@
             }
           }
         })
-        .state('app.products.view', {
-          url: '/:productId',
-          templateUrl: 'modules/products/views/view.html',
-          controllerAs: 'ctrl',
-          controller: function (product) {
-            this.product = product;
-            console.log(product);
-          },
-          resolve: {
-            product: function ($stateParams, ProductsService) {
-              return ProductsService.getProduct($stateParams.productId);
-            }
-          }
-        })
+
         .state('app.products.editcategory', {
           url: '/editcategory/:categoryId',
           templateUrl: 'modules/products/views/categoryform.html',
@@ -156,6 +170,20 @@
             }, function () {
               $state.go('^.list');
             });
+          },
+          resolve: {
+            product: function ($stateParams, ProductsService) {
+              return ProductsService.getProduct($stateParams.productId);
+            }
+          }
+        });
+        modalStateProvider.state('app.products.view', {
+          url: '/:productId',
+          templateUrl: 'modules/products/views/view.html',
+          controllerAs: 'ctrl',
+          controller: function (product) {
+            this.product = product;
+            console.log(product);
           },
           resolve: {
             product: function ($stateParams, ProductsService) {
